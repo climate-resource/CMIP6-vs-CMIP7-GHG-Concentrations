@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier
+_commit: v0.1.3
+_src_path: gl:znicholls/copier-basic-python-repository
+email: zebedee.nicholls@climate-resource.com
+initial_setup: true
+name: Zebedee Nicholls
+notebooks: true
+project_description_short: Comparison of greenhouse gas concentrations used in CMIP6
+    vs. CMIP7
+project_url: https://github.com/climate-resource/CMIP6-vs-CMIP7-GHG-Concentrations
