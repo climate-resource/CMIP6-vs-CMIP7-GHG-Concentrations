@@ -46,31 +46,33 @@ else:
 data_path
 
 # %%
+local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
+local_data_path
+
+# %%
+drs_default = DataReferenceSyntax(
+    directory_path_template= "<activity_id>/<mip_era>/<target_mip>/<institution_id>/<source_id>/<realm>/<frequency>/<variable_id>/<grid_label>/v<version>",
+    directory_path_example= "not_used",
+    filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
+    filename_example= "not_used",
+    )
 source_id_drs_map = {
-    "CR-CMIP-0-3-0": DataReferenceSyntax(
-    directory_path_template= "<activity_id>/<mip_era>/<target_mip>/<institution_id>/<source_id>/<realm>/<frequency>/<variable_id>/<grid_label>/v<version>",
-    directory_path_example= "not_used",
-    filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
-    filename_example= "not_used",
-    ),
-    "UoM-CMIP-1-2-0": DataReferenceSyntax(
-    directory_path_template= "<activity_id>/<mip_era>/<target_mip>/<institution_id>/<source_id>/<realm>/<frequency>/<variable_id>/<grid_label>/v<version>",
-    directory_path_example= "not_used",
-    filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
-    filename_example= "not_used",
-    ),
+    "CR-CMIP-0-3-0": drs_default,
+    "CR-CMIP-testing": drs_default,
+    "CR-CMIP-0-2-1a1-dev": drs_default,
+    "UoM-CMIP-1-2-0": drs_default,
 }
 source_id_drs_map
 
 # %%
 db_l = []
-for file in tqdm.tqdm([*data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")], desc="Extracting file metadata"):
+for file in tqdm.tqdm([*local_data_path.rglob("**/yr/**/*gm*.nc"), *data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")], desc="Extracting file metadata"):
     for source_id in source_id_drs_map:
         if source_id in str(file):
             drs = source_id_drs_map[source_id]
             break
     else:
-        msg = f"No matching source ID found in {file}"
+        msg = f"No matching source ID found in {str(file)}"
         raise NotImplementedError(msg)
 
     metadata = (
@@ -178,7 +180,12 @@ def load_cmip7_data(fp: Path) -> xr.Dataset:
 
 
 # %%
-to_load = db[db["variable_normalised"].isin(["co2", "ch4", "n2o", "cfc12", "cfc11", "cfc11eq"])]
+to_load = db[db["variable_normalised"].isin([
+    "cfc114",
+    "hfc152a",
+    "ccl4",
+    # "co2", "ch4", "n2o", "cfc12", "cfc11", "cfc11eq"
+])]
 
 loaded_l = []
 for _, vdf in tqdm.tqdm(to_load.groupby("variable_normalised"), desc="Variables to load"):
@@ -215,7 +222,7 @@ for data_var in loaded.data_vars:
     fig, axes = plt.subplot_mosaic([["recent", "recent"], ["all", "historical"]], figsize=(10, 6))
 
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
-        loaded[data_var].sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
+        loaded[data_var].sel(year=time_axis).plot.line(x="year", hue="source_id", linewidth=3, alpha=0.4, ax=axes[ax])
 
     plt.tight_layout()
     plt.show()
@@ -229,5 +236,3 @@ for data_var in loaded.data_vars:
 
     plt.tight_layout()
     plt.show()
-
-# %%
