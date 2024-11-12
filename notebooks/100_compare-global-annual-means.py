@@ -244,46 +244,46 @@ to_load = db[db["variable_normalised"].isin([
     "cfc11eq",
     "cfc12eq",
     "hfc134aeq",
-    "c2f6",
-    "c3f8",
-    "c4f10",
-    "c5f12",
-    "c6f14",
-    "c7f16",
-    "c8f18",
-    "cc4f8",
-    "ccl4",
-    "cf4",
-    "cfc11",
-    "cfc113",
-    "cfc114",
-    "cfc115",
-    "cfc12",
-    "ch2cl2",
-    "ch3br",
-    "ch3ccl3",
-    "ch3cl",
-    "chcl3",
-    "halon1211",
-    "halon1301",
-    "halon2402",
-    "hcfc141b",
-    "hcfc142b",
-    "hcfc22",
-    "hfc125",
-    "hfc134a",
-    "hfc143a",
-    "hfc152a",
-    "hfc227ea",
-    "hfc23",
-    "hfc236fa",
-    "hfc245fa",
-    "hfc32",
-    "hfc365mfc",
-    "hfc4310mee",
-    "nf3",
-    "sf6",
-    "so2f2",
+    # "c2f6",
+    # "c3f8",
+    # "c4f10",
+    # "c5f12",
+    # "c6f14",
+    # "c7f16",
+    # "c8f18",
+    # "cc4f8",
+    # "ccl4",
+    # "cf4",
+    # "cfc11",
+    # "cfc113",
+    # "cfc114",
+    # "cfc115",
+    # "cfc12",
+    # "ch2cl2",
+    # "ch3br",
+    # "ch3ccl3",
+    # "ch3cl",
+    # "chcl3",
+    # "halon1211",
+    # "halon1301",
+    # "halon2402",
+    # "hcfc141b",
+    # "hcfc142b",
+    # "hcfc22",
+    # "hfc125",
+    # "hfc134a",
+    # "hfc143a",
+    # "hfc152a",
+    # "hfc227ea",
+    # "hfc23",
+    # "hfc236fa",
+    # "hfc245fa",
+    # "hfc32",
+    # "hfc365mfc",
+    # "hfc4310mee",
+    # "nf3",
+    # "sf6",
+    # "so2f2",
 ])]
 
 loaded_l = []
@@ -344,6 +344,8 @@ for data_var in loaded.data_vars:
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
         difference.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
 
+    fig.suptitle(f"{parray.name} absolute difference")
+    
     plt.tight_layout()
     plt.show()
     
@@ -353,9 +355,7 @@ for data_var in loaded.data_vars:
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
         difference_rel.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
 
+    fig.suptitle(f"{parray.name} percentage difference")
+    
     plt.tight_layout()
     plt.show()
-
-# %%
-
-# %%
