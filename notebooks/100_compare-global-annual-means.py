@@ -46,31 +46,33 @@ else:
 data_path
 
 # %%
+local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
+local_data_path
+
+# %%
+drs_default = DataReferenceSyntax(
+    directory_path_template= "<activity_id>/<mip_era>/<target_mip>/<institution_id>/<source_id>/<realm>/<frequency>/<variable_id>/<grid_label>/v<version>",
+    directory_path_example= "not_used",
+    filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
+    filename_example= "not_used",
+    )
 source_id_drs_map = {
-    "CR-CMIP-0-3-0": DataReferenceSyntax(
-    directory_path_template= "<activity_id>/<mip_era>/<target_mip>/<institution_id>/<source_id>/<realm>/<frequency>/<variable_id>/<grid_label>/v<version>",
-    directory_path_example= "not_used",
-    filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
-    filename_example= "not_used",
-    ),
-    "UoM-CMIP-1-2-0": DataReferenceSyntax(
-    directory_path_template= "<activity_id>/<mip_era>/<target_mip>/<institution_id>/<source_id>/<realm>/<frequency>/<variable_id>/<grid_label>/v<version>",
-    directory_path_example= "not_used",
-    filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
-    filename_example= "not_used",
-    ),
+    "CR-CMIP-0-3-0": drs_default,
+    "CR-CMIP-testing": drs_default,
+    "CR-CMIP-0-2-1a1-dev": drs_default,
+    "UoM-CMIP-1-2-0": drs_default,
 }
 source_id_drs_map
 
 # %%
 db_l = []
-for file in tqdm.tqdm([*data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")], desc="Extracting file metadata"):
+for file in tqdm.tqdm([*local_data_path.rglob("**/yr/**/*gm*.nc"), *data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")], desc="Extracting file metadata"):
     for source_id in source_id_drs_map:
         if source_id in str(file):
             drs = source_id_drs_map[source_id]
             break
     else:
-        msg = f"No matching source ID found in {file}"
+        msg = f"No matching source ID found in {str(file)}"
         raise NotImplementedError(msg)
 
     metadata = (
@@ -86,58 +88,113 @@ db = pd.DataFrame(db_l)
 db
 
 # %%
-CMIP6_TO_CMIP7_VARIABLE_MAP = {'mole_fraction_of_carbon_dioxide_in_air': 'co2',
- 'mole_fraction_of_methane_in_air': 'ch4',
- 'mole_fraction_of_nitrous_oxide_in_air': 'n2o',
- 'mole_fraction_of_c2f6_in_air': 'c2f6',
- 'mole_fraction_of_c3f8_in_air': 'c3f8',
- 'mole_fraction_of_c4f10_in_air': 'c4f10',
- 'mole_fraction_of_c5f12_in_air': 'c5f12',
- 'mole_fraction_of_c6f14_in_air': 'c6f14',
- 'mole_fraction_of_c7f16_in_air': 'c7f16',
- 'mole_fraction_of_c8f18_in_air': 'c8f18',
- 'mole_fraction_of_c_c4f8_in_air': 'cc4f8',
- 'mole_fraction_of_carbon_tetrachloride_in_air': 'ccl4',
- 'mole_fraction_of_cf4_in_air': 'cf4',
- 'mole_fraction_of_cfc11_in_air': 'cfc11',
- 'mole_fraction_of_cfc113_in_air': 'cfc113',
- 'mole_fraction_of_cfc114_in_air': 'cfc114',
- 'mole_fraction_of_cfc115_in_air': 'cfc115',
- 'mole_fraction_of_cfc12_in_air': 'cfc12',
- 'mole_fraction_of_ch2cl2_in_air': 'ch2cl2',
- 'mole_fraction_of_methyl_bromide_in_air': 'ch3br',
- 'mole_fraction_of_ch3ccl3_in_air': 'ch3ccl3',
- 'mole_fraction_of_methyl_chloride_in_air': 'ch3cl',
- 'mole_fraction_of_chcl3_in_air': 'chcl3',
- 'mole_fraction_of_halon1211_in_air': 'halon1211',
- 'mole_fraction_of_halon1301_in_air': 'halon1301',
- 'mole_fraction_of_halon2402_in_air': 'halon2402',
- 'mole_fraction_of_hcfc141b_in_air': 'hcfc141b',
- 'mole_fraction_of_hcfc142b_in_air': 'hcfc142b',
- 'mole_fraction_of_hcfc22_in_air': 'hcfc22',
- 'mole_fraction_of_hfc125_in_air': 'hfc125',
- 'mole_fraction_of_hfc134a_in_air': 'hfc134a',
- 'mole_fraction_of_hfc143a_in_air': 'hfc143a',
- 'mole_fraction_of_hfc152a_in_air': 'hfc152a',
- 'mole_fraction_of_hfc227ea_in_air': 'hfc227ea',
- 'mole_fraction_of_hfc23_in_air': 'hfc23',
- 'mole_fraction_of_hfc236fa_in_air': 'hfc236fa',
- 'mole_fraction_of_hfc245fa_in_air': 'hfc245fa',
- 'mole_fraction_of_hfc32_in_air': 'hfc32',
- 'mole_fraction_of_hfc365mfc_in_air': 'hfc365mfc',
- 'mole_fraction_of_hfc4310mee_in_air': 'hfc4310mee',
- 'mole_fraction_of_nf3_in_air': 'nf3',
- 'mole_fraction_of_sf6_in_air': 'sf6',
- 'mole_fraction_of_so2f2_in_air': 'so2f2',
- 'mole_fraction_of_cfc11eq_in_air': 'cfc11eq',
- 'mole_fraction_of_cfc12eq_in_air': 'cfc12eq',
- 'mole_fraction_of_hfc134aeq_in_air': 'hfc134aeq'}
+CMIP6_TO_CMIP7_VARIABLE_MAP = {
+    'mole_fraction_of_carbon_dioxide_in_air': 'co2',
+    'mole_fraction_of_methane_in_air': 'ch4',
+    'mole_fraction_of_nitrous_oxide_in_air': 'n2o',
+    'mole_fraction_of_c2f6_in_air': 'c2f6',
+    'mole_fraction_of_c3f8_in_air': 'c3f8',
+    'mole_fraction_of_c4f10_in_air': 'c4f10',
+    'mole_fraction_of_c5f12_in_air': 'c5f12',
+    'mole_fraction_of_c6f14_in_air': 'c6f14',
+    'mole_fraction_of_c7f16_in_air': 'c7f16',
+    'mole_fraction_of_c8f18_in_air': 'c8f18',
+    'mole_fraction_of_c_c4f8_in_air': 'cc4f8',
+    'mole_fraction_of_carbon_tetrachloride_in_air': 'ccl4',
+    'mole_fraction_of_cf4_in_air': 'cf4',
+    'mole_fraction_of_cfc11_in_air': 'cfc11',
+    'mole_fraction_of_cfc113_in_air': 'cfc113',
+    'mole_fraction_of_cfc114_in_air': 'cfc114',
+    'mole_fraction_of_cfc115_in_air': 'cfc115',
+    'mole_fraction_of_cfc12_in_air': 'cfc12',
+    'mole_fraction_of_ch2cl2_in_air': 'ch2cl2',
+    'mole_fraction_of_methyl_bromide_in_air': 'ch3br',
+    'mole_fraction_of_ch3ccl3_in_air': 'ch3ccl3',
+    'mole_fraction_of_methyl_chloride_in_air': 'ch3cl',
+    'mole_fraction_of_chcl3_in_air': 'chcl3',
+    'mole_fraction_of_halon1211_in_air': 'halon1211',
+    'mole_fraction_of_halon1301_in_air': 'halon1301',
+    'mole_fraction_of_halon2402_in_air': 'halon2402',
+    'mole_fraction_of_hcfc141b_in_air': 'hcfc141b',
+    'mole_fraction_of_hcfc142b_in_air': 'hcfc142b',
+    'mole_fraction_of_hcfc22_in_air': 'hcfc22',
+    'mole_fraction_of_hfc125_in_air': 'hfc125',
+    'mole_fraction_of_hfc134a_in_air': 'hfc134a',
+    'mole_fraction_of_hfc143a_in_air': 'hfc143a',
+    'mole_fraction_of_hfc152a_in_air': 'hfc152a',
+    'mole_fraction_of_hfc227ea_in_air': 'hfc227ea',
+    'mole_fraction_of_hfc23_in_air': 'hfc23',
+    'mole_fraction_of_hfc236fa_in_air': 'hfc236fa',
+    'mole_fraction_of_hfc245fa_in_air': 'hfc245fa',
+    'mole_fraction_of_hfc32_in_air': 'hfc32',
+    'mole_fraction_of_hfc365mfc_in_air': 'hfc365mfc',
+    'mole_fraction_of_hfc4310mee_in_air': 'hfc4310mee',
+    'mole_fraction_of_nf3_in_air': 'nf3',
+    'mole_fraction_of_sf6_in_air': 'sf6',
+    'mole_fraction_of_so2f2_in_air': 'so2f2',
+    'mole_fraction_of_cfc11eq_in_air': 'cfc11eq',
+    'mole_fraction_of_cfc12eq_in_air': 'cfc12eq',
+    'mole_fraction_of_hfc134aeq_in_air': 'hfc134aeq',
+}
+
+# %%
+CMIP7_TO_NORMAL_VARIABLE_MAP = {
+    'co2': 'co2',
+    'ch4': 'ch4',
+    'n2o': 'n2o',
+    'pfc116': 'c2f6',
+    'pfc218': 'c3f8',
+    'pfc3110': 'c4f10',
+    'pfc4112': 'c5f12',
+    'pfc5114': 'c6f14',
+    'pfc6116': 'c7f16',
+    'pfc7118': 'c8f18',
+    'pfc318': 'cc4f8',
+    'ccl4': 'ccl4',
+    'cf4': 'cf4',
+    'cfc11': 'cfc11',
+    'cfc113': 'cfc113',
+    'cfc114': 'cfc114',
+    'cfc115': 'cfc115',
+    'cfc12': 'cfc12',
+    'ch2cl2': 'ch2cl2',
+    'ch3br': 'ch3br',
+    'hcc140a': 'ch3ccl3',
+    'ch3cl': 'ch3cl',
+    'chcl3': 'chcl3',
+    'halon1211': 'halon1211',
+    'halon1301': 'halon1301',
+    'halon2402': 'halon2402',
+    'hcfc141b': 'hcfc141b',
+    'hcfc142b': 'hcfc142b',
+    'hcfc22': 'hcfc22',
+    'hfc125': 'hfc125',
+    'hfc134a': 'hfc134a',
+    'hfc143a': 'hfc143a',
+    'hfc152a': 'hfc152a',
+    'hfc227ea': 'hfc227ea',
+    'hfc23': 'hfc23',
+    'hfc236fa': 'hfc236fa',
+    'hfc245fa': 'hfc245fa',
+    'hfc32': 'hfc32',
+    'hfc365mfc': 'hfc365mfc',
+    'hfc4310mee': 'hfc4310mee',
+    'nf3': 'nf3',
+    'sf6': 'sf6',
+    'so2f2': 'so2f2',
+    'cfc11eq': 'cfc11eq',
+    'cfc12eq': 'cfc12eq',
+    'hfc134aeq': 'hfc134aeq',
+}
 
 
 # %%
 def normalise_variable_names(v: str) -> str:
     if v in CMIP6_TO_CMIP7_VARIABLE_MAP:
         return CMIP6_TO_CMIP7_VARIABLE_MAP[v]
+        
+    if v in CMIP7_TO_NORMAL_VARIABLE_MAP:
+        return CMIP7_TO_NORMAL_VARIABLE_MAP[v]
 
     return v
 
@@ -174,11 +231,60 @@ def load_cmip6_data(fp: Path) -> xr.Dataset:
 def load_cmip7_data(fp: Path) -> xr.Dataset:
     out = xr.open_dataset(fp, use_cftime=True)
 
+    out = out.rename({k: v for k, v in CMIP7_TO_NORMAL_VARIABLE_MAP.items() if k in out.data_vars})
+
     return out
 
 
 # %%
-to_load = db[db["variable_normalised"].isin(["co2", "ch4", "n2o", "cfc12", "cfc11", "cfc11eq"])]
+to_load = db[db["variable_normalised"].isin([
+    "co2", 
+    "ch4", 
+    "n2o",
+    "cfc11eq",
+    "cfc12eq",
+    "hfc134aeq",
+    # "c2f6",
+    # "c3f8",
+    # "c4f10",
+    # "c5f12",
+    # "c6f14",
+    # "c7f16",
+    # "c8f18",
+    # "cc4f8",
+    # "ccl4",
+    # "cf4",
+    # "cfc11",
+    # "cfc113",
+    # "cfc114",
+    # "cfc115",
+    # "cfc12",
+    # "ch2cl2",
+    # "ch3br",
+    # "ch3ccl3",
+    # "ch3cl",
+    # "chcl3",
+    # "halon1211",
+    # "halon1301",
+    # "halon2402",
+    # "hcfc141b",
+    # "hcfc142b",
+    # "hcfc22",
+    # "hfc125",
+    # "hfc134a",
+    # "hfc143a",
+    # "hfc152a",
+    # "hfc227ea",
+    # "hfc23",
+    # "hfc236fa",
+    # "hfc245fa",
+    # "hfc32",
+    # "hfc365mfc",
+    # "hfc4310mee",
+    # "nf3",
+    # "sf6",
+    # "so2f2",
+])]
 
 loaded_l = []
 for _, vdf in tqdm.tqdm(to_load.groupby("variable_normalised"), desc="Variables to load"):
@@ -212,22 +318,44 @@ for data_var in loaded.data_vars:
     if "bnds" in data_var:
         continue
 
+    parray = loaded[data_var].dropna("source_id", how="all")
+    
+    if parray.sel(year=range(1900, 2010 + 1)).isnull().sum() > 0:
+        msg = f"Likely renaming error for {data_var}"
+        raise AssertionError(msg)
+
     fig, axes = plt.subplot_mosaic([["recent", "recent"], ["all", "historical"]], figsize=(10, 6))
 
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
-        loaded[data_var].sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
+        parray.sel(year=time_axis).plot.line(x="year", hue="source_id", linewidth=3, alpha=0.4, ax=axes[ax])
 
+    fig.suptitle(parray.name)
+    
     plt.tight_layout()
     plt.show()
 
-    
-    difference = loaded[data_var].sel(source_id="CR-CMIP-0-3-0") - loaded[data_var].sel(source_id="UoM-CMIP-1-2-0")
+    try:
+        difference = parray.sel(source_id="CR-CMIP-testing") - parray.sel(source_id="UoM-CMIP-1-2-0")
+    except KeyError:
+        continue
+        
     fig, axes = plt.subplot_mosaic([["recent", "recent"], ["all", "historical"]], figsize=(10, 6))
 
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
         difference.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
 
+    fig.suptitle(f"{parray.name} absolute difference")
+    
     plt.tight_layout()
     plt.show()
+    
+    difference_rel = (parray.sel(source_id="CR-CMIP-testing") - parray.sel(source_id="UoM-CMIP-1-2-0")) / parray.sel(source_id="UoM-CMIP-1-2-0") * 100
+    fig, axes = plt.subplot_mosaic([["recent", "recent"], ["all", "historical"]], figsize=(10, 6))
 
-# %%
+    for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
+        difference_rel.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
+
+    fig.suptitle(f"{parray.name} percentage difference")
+    
+    plt.tight_layout()
+    plt.show()
