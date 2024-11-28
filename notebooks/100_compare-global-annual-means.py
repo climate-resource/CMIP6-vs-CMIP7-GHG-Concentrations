@@ -271,41 +271,41 @@ to_load = db[db["variable_normalised"].isin([
     # "ch3br",
     # "ch3cl",
     # # # WMO 2022 Ch. 7 variables end
-    # # Velders et al., 2022 variables start
-    "hfc32",
-    "hfc125",
-    "hfc134a",
-    "hfc143a",
-    "hfc152a",
-    "hfc227ea",
-    "hfc236fa",
-    "hfc245fa",
-    "hfc365mfc",
-    "hfc4310mee",
-    # # Velders et al., 2022 variables end
+    # # # Velders et al., 2022 variables start
+    # "hfc32",
+    # "hfc125",
+    # "hfc134a",
+    # "hfc143a",
+    # "hfc152a",
+    # "hfc227ea",
+    # "hfc236fa",
+    # "hfc245fa",
+    # "hfc365mfc",
+    # "hfc4310mee",
+    # # # Velders et al., 2022 variables end
 
-    # # Equivalent species start
-    # "cfc11eq",
-    # "cfc12eq",
-    # "hfc134aeq",
-    # # Equivalent species end
+    # Equivalent species start
+    "cfc11eq",
+    "cfc12eq",
+    "hfc134aeq",
+    # Equivalent species end
     
-    # # Other
-    # "hfc23",
-    # "cf4",
-    # "c2f6",
-    # "c3f8",
-    # "c4f10",
-    # "c5f12",
-    # "c6f14",
-    # "c7f16",
-    # "c8f18",
-    # "cc4f8",
-    # "ch2cl2",
-    # "chcl3",
-    # "nf3",
-    # "sf6",
-    # "so2f2",
+    # Other
+    "hfc23",
+    "cf4",
+    "c2f6",
+    "c3f8",
+    "c4f10",
+    "c5f12",
+    "c6f14",
+    "c7f16",
+    "c8f18",
+    "cc4f8",
+    "ch2cl2",
+    "chcl3",
+    "nf3",
+    "sf6",
+    "so2f2",
 ])]
 
 # %%
