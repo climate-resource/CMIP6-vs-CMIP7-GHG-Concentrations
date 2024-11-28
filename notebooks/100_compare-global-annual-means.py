@@ -31,6 +31,11 @@ import tqdm
 import xarray as xr
 from input4mips_validation.cvs.drs import DataReferenceSyntax
 
+from utils import PROCESSED_DATA_DIR, RAW_DATA_DIR
+
+# %% [markdown]
+# # Load CMIP data
+
 # %%
 # Someone can explain a better way to do this to me another day
 esgpull_config_raw = subprocess.check_output(
@@ -242,34 +247,52 @@ def load_cmip7_data(fps: list[Path]) -> xr.Dataset:
 
 
 # %%
-wmo_ch7_df.columns
-
-# %%
 to_load = db[db["variable_normalised"].isin([
     # "co2", 
     # "ch4", 
     # "n2o",
-    # # WMO 2022 Ch. 7 variables
-    "cfc11",
-    "cfc12",
-    "cfc113",
-    "cfc114",
-    "cfc115",
-    "ccl4",
-    "ch3ccl3",
-    "halon1211",
-    "halon1301",
-    "halon2402",
-    # halon 1202 not included anywhere, likely because very tiny
-    "hcfc141b",
-    "hcfc142b",
-    "hcfc22",
-    "ch3br",
-    "ch3cl",
-    # # Other
+    # # # WMO 2022 Ch. 7 variables start
+    # "cfc11",
+    # "cfc12",
+    # "cfc113",
+    # "cfc114",
+    # "cfc115",
+    # "ccl4",
+    # "ch3ccl3",
+    # "halon1211",
+    # "halon1301",
+    # "halon2402",
+    # # halon 1202 not included anywhere, likely because very tiny
+    # # # Western variables start
+    # "hcfc141b",
+    # "hcfc142b",
+    # "hcfc22",
+    # # # Western variables end
+    # "ch3br",
+    # "ch3cl",
+    # # # WMO 2022 Ch. 7 variables end
+    # # Velders et al., 2022 variables start
+    "hfc32",
+    "hfc125",
+    "hfc134a",
+    "hfc143a",
+    "hfc152a",
+    "hfc227ea",
+    "hfc236fa",
+    "hfc245fa",
+    "hfc365mfc",
+    "hfc4310mee",
+    # # Velders et al., 2022 variables end
+
+    # # Equivalent species start
     # "cfc11eq",
     # "cfc12eq",
     # "hfc134aeq",
+    # # Equivalent species end
+    
+    # # Other
+    # "hfc23",
+    # "cf4",
     # "c2f6",
     # "c3f8",
     # "c4f10",
@@ -278,20 +301,8 @@ to_load = db[db["variable_normalised"].isin([
     # "c7f16",
     # "c8f18",
     # "cc4f8",
-    # "cf4",
     # "ch2cl2",
     # "chcl3",
-    # "hfc125",
-    # "hfc134a",
-    # "hfc143a",
-    # "hfc152a",
-    # "hfc227ea",
-    # "hfc23",
-    # "hfc236fa",
-    # "hfc245fa",
-    # "hfc32",
-    # "hfc365mfc",
-    # "hfc4310mee",
     # "nf3",
     # "sf6",
     # "so2f2",
@@ -324,8 +335,11 @@ loaded = xr.merge(loaded_l, combine_attrs="drop_conflicts")
 loaded = loaded.groupby("time.year").mean()
 loaded
 
+# %% [markdown]
+# ## Load WMO 2022 ozone assessment Chapter 7 data
+
 # %%
-WMO_CH7_DATA_PATH = Path("..") / "data" / "raw" / "wmo-2022" / "wmo2022_Ch7_mixingratios.xlsx"
+WMO_CH7_DATA_PATH = RAW_DATA_DIR / "wmo-2022" / "wmo2022_Ch7_mixingratios.xlsx"
 
 # %%
 # Created with:
@@ -350,9 +364,10 @@ wmo_variable_normalisation_map = {
 }
 
 # %%
+wmo_ch7_source = "WMO 2022 Ch. 7"
 wmo_ch7_df_raw = pd.read_excel(WMO_CH7_DATA_PATH)
 wmo_ch7_df = wmo_ch7_df_raw.rename({"Year": "year", **wmo_variable_normalisation_map}, axis="columns")
-wmo_ch7_df["source"] = "WMO 2022 Ch. 7"
+wmo_ch7_df["source"] = wmo_ch7_source
 
 # WMO data is start of year, yet we want mid-year values, hence do the below
 wmo_ch7_df = wmo_ch7_df.set_index(["year", "source"])
@@ -362,6 +377,61 @@ wmo_ch7_df.iloc[:, :] = tmp
 wmo_ch7_df = wmo_ch7_df.reset_index()
 
 wmo_ch7_df
+
+# %% [markdown]
+# ## Load Western et al. 2024 data
+
+# %%
+wesetern_variable_normalisation_map = {
+    'HCFC-22': 'hcfc22',
+    'HCFC-141b': 'hcfc141b',
+    'HCFC-142b': 'hcfc142b',
+}
+
+# %%
+western_source = "Western et al., 2024"
+western_df_raw = pd.read_csv(PROCESSED_DATA_DIR / "western-et-al-2024" / "hcfc_projections.csv")
+western_df = western_df_raw.rename({"Year": "year", **wesetern_variable_normalisation_map}, axis="columns")
+western_df["source"] = western_source
+western_df
+
+# %% [markdown]
+# ## Load Velders et al. 2022 data
+
+# %%
+velders_variable_normalisation_map = {
+    'HFC-32': 'hfc32',
+    'HFC-125': 'hfc125',
+    'HFC-134a': 'hfc134a',
+    'HFC-143a': 'hfc143a',
+    'HFC-152a': 'hfc152a',
+    'HFC-227ea': 'hfc227ea',
+    'HFC-236fa': 'hfc236fa',
+    'HFC-245fa': 'hfc245fa',
+    'HFC-365mfc': 'hfc365mfc',
+    'HFC-43-10mee': 'hfc4310mee',
+}
+
+# %%
+velders_source = "Velders et al., 2022"
+velders_df_raw = pd.read_csv(PROCESSED_DATA_DIR / "velders-et-al-2022" / "hfc_projections.csv")
+velders_df = velders_df_raw.rename({"Year": "year", **velders_variable_normalisation_map}, axis="columns")
+velders_df["source"] = velders_source
+
+# Velders data is start of year, yet we want mid-year values, hence do the below
+velders_df = velders_df.set_index(["year", "source"])
+tmp = (velders_df.iloc[:-1, :].values + velders_df.iloc[1:, :].values) / 2.0
+velders_df = velders_df.iloc[:-1, :]
+velders_df.iloc[:, :] = tmp
+velders_df = velders_df.reset_index()
+
+velders_df
+
+# %% [markdown]
+# ## Plot
+
+# %% [markdown]
+# ### Against other data sources
 
 # %%
 data_vars_to_plt = sorted([v for v in loaded.data_vars if "bnds" not in v])
@@ -381,7 +451,9 @@ mosaic_data_vars
 
 # %%
 palette = {
-    "WMO 2022 Ch. 7": "black",
+    wmo_ch7_source: "black",
+    velders_source: "tab:cyan",
+    western_source: "tab:green",
     CMIP6_SOURCE_ID: "tab:purple",
     CMIP7_COMPARE_SOURCE_ID: "tab:red",
     "CR-CMIP-0-3-0": "tab:gray",
@@ -402,25 +474,38 @@ for time_range in (
         cmip_data = loaded[data_var].to_dataframe().reset_index().rename({"source_id": "source"}, axis="columns")
 
         pdf = cmip_data.copy()
+        
         if data_var in wmo_ch7_df:
-            pdf = pd.concat([pdf, wmo_ch7_df[["year", "source", data_var]]])
-
+            pdf = pd.concat([pdf, wmo_ch7_df[["year", "source", data_var]]]).reset_index(drop=True)
         else:
-            print(f"{data_var} not in WMO")
+            print(f"{data_var} not in WMO 2022 Ch. 7")
+            
+        if data_var in western_df:
+            pdf = pd.concat([pdf, western_df[["year", "source", data_var]]]).reset_index(drop=True)
+        else:
+            print(f"{data_var} not in Western et al., 2024")
+            
+        if data_var in velders_df:
+            pdf = pd.concat([pdf, velders_df[["year", "source", data_var]]]).reset_index(drop=True)
+        else:
+            print(f"{data_var} not in Velders et al., 2022")
 
         
         pdf = pdf[pdf["year"].isin(time_range)]
         
-        sns.lineplot(
+        sns.scatterplot(
             data=pdf,
+            style="source",
             hue="source",
             palette=palette,
             x="year",
             y=data_var,
             ax=axes[data_var],
-            linewidth=2, 
+            # linewidth=2, 
             alpha=0.7
         )
+
+        axes[data_var].axhline(0, linestyle="--", color="k")
         
     fig.suptitle(time_range)
     
@@ -429,6 +514,9 @@ for time_range in (
 
 # %%
 print("done")
+
+# %% [markdown]
+# ### Changes since CMIP6
 
 # %%
 for data_var in sorted(loaded.data_vars):
