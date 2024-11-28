@@ -15,6 +15,8 @@ esgpull = "^0.6.5"
 xarray = "^2024.7.0"
 input4mips-validation = "0.11.3"
 nc-time-axis = "^1.4.1"
+seaborn = "^0.13.2"
+openpyxl = "^3.1.5"
 
 [tool.jupytext]
 formats = "ipynb,py:percent"

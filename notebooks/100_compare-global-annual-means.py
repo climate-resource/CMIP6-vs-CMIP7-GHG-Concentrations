@@ -24,7 +24,9 @@ import subprocess
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import seaborn as sns
 import tqdm
 import xarray as xr
 from input4mips_validation.cvs.drs import DataReferenceSyntax
@@ -56,10 +58,13 @@ drs_default = DataReferenceSyntax(
     filename_template="<variable_id>_<activity_id>_<dataset_category>_<target_mip>_<source_id>_<grid_label>[_<time_range>].nc",
     filename_example= "not_used",
     )
+
+CMIP6_SOURCE_ID = "UoM-CMIP-1-2-0"
+CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-testing"
 source_id_drs_map = {
     "CR-CMIP-0-3-0": drs_default,
     "CR-CMIP-testing": drs_default,
-    "CR-CMIP-0-2-1a1-dev": drs_default,
+    # "CR-CMIP-0-2-1a1-dev": drs_default,
     "UoM-CMIP-1-2-0": drs_default,
 }
 source_id_drs_map
@@ -205,8 +210,8 @@ db
 
 
 # %%
-def load_cmip6_data(fp: Path) -> xr.Dataset:
-    out = xr.open_dataset(fp, decode_times=False)
+def load_cmip6_data(fps: list[Path]) -> xr.Dataset:
+    out = xr.open_mfdataset(fps, decode_times=False).compute()
     
     # Drop out the first year, which is zero, and doesn't exist anywhere
     if out.attrs["frequency"] == "yr":
@@ -228,8 +233,8 @@ def load_cmip6_data(fp: Path) -> xr.Dataset:
 
 
 # %%
-def load_cmip7_data(fp: Path) -> xr.Dataset:
-    out = xr.open_dataset(fp, use_cftime=True)
+def load_cmip7_data(fps: list[Path]) -> xr.Dataset:
+    out = xr.open_mfdataset(fps, use_cftime=True).compute()
 
     out = out.rename({k: v for k, v in CMIP7_TO_NORMAL_VARIABLE_MAP.items() if k in out.data_vars})
 
@@ -237,13 +242,34 @@ def load_cmip7_data(fp: Path) -> xr.Dataset:
 
 
 # %%
+wmo_ch7_df.columns
+
+# %%
 to_load = db[db["variable_normalised"].isin([
-    "co2", 
-    "ch4", 
-    "n2o",
-    "cfc11eq",
-    "cfc12eq",
-    "hfc134aeq",
+    # "co2", 
+    # "ch4", 
+    # "n2o",
+    # # WMO 2022 Ch. 7 variables
+    "cfc11",
+    "cfc12",
+    "cfc113",
+    "cfc114",
+    "cfc115",
+    "ccl4",
+    "ch3ccl3",
+    "halon1211",
+    "halon1301",
+    "halon2402",
+    # halon 1202 not included anywhere, likely because very tiny
+    "hcfc141b",
+    "hcfc142b",
+    "hcfc22",
+    "ch3br",
+    "ch3cl",
+    # # Other
+    # "cfc11eq",
+    # "cfc12eq",
+    # "hfc134aeq",
     # "c2f6",
     # "c3f8",
     # "c4f10",
@@ -252,24 +278,9 @@ to_load = db[db["variable_normalised"].isin([
     # "c7f16",
     # "c8f18",
     # "cc4f8",
-    # "ccl4",
     # "cf4",
-    # "cfc11",
-    # "cfc113",
-    # "cfc114",
-    # "cfc115",
-    # "cfc12",
     # "ch2cl2",
-    # "ch3br",
-    # "ch3ccl3",
-    # "ch3cl",
     # "chcl3",
-    # "halon1211",
-    # "halon1301",
-    # "halon2402",
-    # "hcfc141b",
-    # "hcfc142b",
-    # "hcfc22",
     # "hfc125",
     # "hfc134a",
     # "hfc143a",
@@ -286,35 +297,141 @@ to_load = db[db["variable_normalised"].isin([
     # "so2f2",
 ])]
 
+# %%
 loaded_l = []
-for _, vdf in tqdm.tqdm(to_load.groupby("variable_normalised"), desc="Variables to load"):
+for _, vdf in tqdm.tqdm(to_load.groupby("variable_normalised"), desc="Dataset to load"):
     variable_l = []
-    for _, row in vdf.iterrows():
-        fp = row["filepath"]
-        source_id = row["source_id"]
+    for (mip_era, source_id), gdf in vdf.groupby(["mip_era", "source_id"]):
+        fps = gdf["filepath"].tolist()
+
         if "UoM" in source_id:
-            loaded_fp = load_cmip6_data(fp)
+            loaded_fp = load_cmip6_data(fps)
             # We only want global-mean, hence
             loaded_fp = loaded_fp.sel(sector=0).reset_coords("sector", drop=True)
             
         else:
-            loaded_fp = load_cmip7_data(fp)
+            loaded_fp = load_cmip7_data(fps)
     
         # Make life easy, put everything on the same calendar
         loaded_fp = loaded_fp.convert_calendar("proleptic_gregorian")
         loaded_fp = loaded_fp.assign_coords(source_id=source_id)
         variable_l.append(loaded_fp)
         
-    loaded_l.append(xr.concat(variable_l, "source_id"))
+    loaded_l.append(xr.concat(variable_l, "source_id", combine_attrs="drop_conflicts"))
         
-
-loaded = xr.merge(loaded_l)
+loaded = xr.merge(loaded_l, combine_attrs="drop_conflicts")
 # Make life easy, take annual mean
 loaded = loaded.groupby("time.year").mean()
 loaded
 
 # %%
-for data_var in loaded.data_vars:
+WMO_CH7_DATA_PATH = Path("..") / "data" / "raw" / "wmo-2022" / "wmo2022_Ch7_mixingratios.xlsx"
+
+# %%
+# Created with:
+# `# {k: k.lower().replace("-", "") for k in wmo_ch7_df.columns}`
+wmo_variable_normalisation_map = {
+    'CFC-11': 'cfc11',
+    'CFC-12': 'cfc12',
+    'CFC-113': 'cfc113',
+    'CFC-114': 'cfc114',
+    'CFC-115': 'cfc115',
+    'CCl4': 'ccl4',
+    'CH3CCl3': 'ch3ccl3',
+    'HCFC-22': 'hcfc22',
+    'HCFC-141b': 'hcfc141b',
+    'HCFC-142b': 'hcfc142b',
+    'halon-1211': 'halon1211',
+    'halon-1202': 'halon1202',
+    'halon-1301': 'halon1301',
+    'halon-2402': 'halon2402',
+    'CH3Br': 'ch3br',
+    'CH3Cl': 'ch3cl',
+}
+
+# %%
+wmo_ch7_df_raw = pd.read_excel(WMO_CH7_DATA_PATH)
+wmo_ch7_df = wmo_ch7_df_raw.rename({"Year": "year", **wmo_variable_normalisation_map}, axis="columns")
+wmo_ch7_df["source"] = "WMO 2022 Ch. 7"
+
+# WMO data is start of year, yet we want mid-year values, hence do the below
+wmo_ch7_df = wmo_ch7_df.set_index(["year", "source"])
+tmp = (wmo_ch7_df.iloc[:-1, :].values + wmo_ch7_df.iloc[1:, :].values) / 2.0
+wmo_ch7_df = wmo_ch7_df.iloc[:-1, :]
+wmo_ch7_df.iloc[:, :] = tmp
+wmo_ch7_df = wmo_ch7_df.reset_index()
+
+wmo_ch7_df
+
+# %%
+data_vars_to_plt = sorted([v for v in loaded.data_vars if "bnds" not in v])
+grid_width = 3
+mosaic_data_vars = [
+    [
+        data_var
+        for data_var in data_vars_to_plt[i : i + grid_width]
+    ]
+    for i in range(0, len(data_vars_to_plt), grid_width)
+]
+if len(mosaic_data_vars[-1]) < grid_width:
+    padding = grid_width - len(mosaic_data_vars[-1])
+    mosaic_data_vars[-1].extend(padding * [""])
+    
+mosaic_data_vars
+
+# %%
+palette = {
+    "WMO 2022 Ch. 7": "black",
+    CMIP6_SOURCE_ID: "tab:purple",
+    CMIP7_COMPARE_SOURCE_ID: "tab:red",
+    "CR-CMIP-0-3-0": "tab:gray",
+}
+
+# %%
+for time_range in (
+    range(1940, 2025 + 1),
+    range(2000, 2025 + 1),
+    # range(1750, 2025 + 1),
+):
+    fig, axes = plt.subplot_mosaic(
+        mosaic_data_vars,
+        figsize=(12, 4.5 * len(mosaic_data_vars)),
+    )
+
+    for data_var in data_vars_to_plt:
+        cmip_data = loaded[data_var].to_dataframe().reset_index().rename({"source_id": "source"}, axis="columns")
+
+        pdf = cmip_data.copy()
+        if data_var in wmo_ch7_df:
+            pdf = pd.concat([pdf, wmo_ch7_df[["year", "source", data_var]]])
+
+        else:
+            print(f"{data_var} not in WMO")
+
+        
+        pdf = pdf[pdf["year"].isin(time_range)]
+        
+        sns.lineplot(
+            data=pdf,
+            hue="source",
+            palette=palette,
+            x="year",
+            y=data_var,
+            ax=axes[data_var],
+            linewidth=2, 
+            alpha=0.7
+        )
+        
+    fig.suptitle(time_range)
+    
+    plt.tight_layout()
+    plt.show()
+
+# %%
+print("done")
+
+# %%
+for data_var in sorted(loaded.data_vars):
     if "bnds" in data_var:
         continue
 
@@ -335,7 +452,7 @@ for data_var in loaded.data_vars:
     plt.show()
 
     try:
-        difference = parray.sel(source_id="CR-CMIP-testing") - parray.sel(source_id="UoM-CMIP-1-2-0")
+        difference = parray.sel(source_id=CMIP7_COMPARE_SOURCE_ID) - parray.sel(source_id=CMIP6_SOURCE_ID)
     except KeyError:
         continue
         
@@ -344,18 +461,20 @@ for data_var in loaded.data_vars:
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
         difference.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
 
-    fig.suptitle(f"{parray.name} absolute difference")
+    fig.suptitle(f"{parray.name} absolute difference ({CMIP7_COMPARE_SOURCE_ID} - {CMIP6_SOURCE_ID})")
     
     plt.tight_layout()
     plt.show()
     
-    difference_rel = (parray.sel(source_id="CR-CMIP-testing") - parray.sel(source_id="UoM-CMIP-1-2-0")) / parray.sel(source_id="UoM-CMIP-1-2-0") * 100
+    difference_rel = (parray.sel(source_id=CMIP7_COMPARE_SOURCE_ID) - parray.sel(source_id=CMIP6_SOURCE_ID)) / parray.sel(source_id=CMIP7_COMPARE_SOURCE_ID) * 100
     fig, axes = plt.subplot_mosaic([["recent", "recent"], ["all", "historical"]], figsize=(10, 6))
 
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
         difference_rel.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
 
-    fig.suptitle(f"{parray.name} percentage difference")
+    fig.suptitle(f"{parray.name} percentage difference ({CMIP7_COMPARE_SOURCE_ID} - {CMIP6_SOURCE_ID})")
     
     plt.tight_layout()
     plt.show()
+
+# %%
