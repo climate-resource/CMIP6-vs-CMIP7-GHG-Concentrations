@@ -251,26 +251,26 @@ to_load = db[db["variable_normalised"].isin([
     # "co2", 
     # "ch4", 
     # "n2o",
-    # # # WMO 2022 Ch. 7 variables start
-    # "cfc11",
-    # "cfc12",
-    # "cfc113",
-    # "cfc114",
-    # "cfc115",
-    # "ccl4",
-    # "ch3ccl3",
-    # "halon1211",
-    # "halon1301",
-    # "halon2402",
-    # # halon 1202 not included anywhere, likely because very tiny
-    # # # Western variables start
-    # "hcfc141b",
-    # "hcfc142b",
-    # "hcfc22",
-    # # # Western variables end
-    # "ch3br",
-    # "ch3cl",
-    # # # WMO 2022 Ch. 7 variables end
+    # # WMO 2022 Ch. 7 variables start
+    "cfc11",
+    "cfc12",
+    "cfc113",
+    "cfc114",
+    "cfc115",
+    "ccl4",
+    "ch3ccl3",
+    "halon1211",
+    "halon1301",
+    "halon2402",
+    # halon 1202 not included anywhere, likely because very tiny
+    "ch3br",
+    "ch3cl",
+    # # Western variables start
+    "hcfc141b",
+    "hcfc142b",
+    "hcfc22",
+    # # Western variables end
+    # WMO 2022 Ch. 7 variables end
     # # # Velders et al., 2022 variables start
     # "hfc32",
     # "hfc125",
@@ -290,22 +290,22 @@ to_load = db[db["variable_normalised"].isin([
     "hfc134aeq",
     # Equivalent species end
     
-    # Other
-    "hfc23",
-    "cf4",
-    "c2f6",
-    "c3f8",
-    "c4f10",
-    "c5f12",
-    "c6f14",
-    "c7f16",
-    "c8f18",
-    "cc4f8",
-    "ch2cl2",
-    "chcl3",
-    "nf3",
-    "sf6",
-    "so2f2",
+    # # Other
+    # "hfc23",
+    # "cf4",
+    # "c2f6",
+    # "c3f8",
+    # "c4f10",
+    # "c5f12",
+    # "c6f14",
+    # "c7f16",
+    # "c8f18",
+    # "cc4f8",
+    # "ch2cl2",
+    # "chcl3",
+    # "nf3",
+    # "sf6",
+    # "so2f2",
 ])]
 
 # %%
@@ -463,7 +463,7 @@ palette = {
 for time_range in (
     range(1940, 2025 + 1),
     range(2000, 2025 + 1),
-    # range(1750, 2025 + 1),
+    range(1750, 2025 + 1),
 ):
     fig, axes = plt.subplot_mosaic(
         mosaic_data_vars,
@@ -564,5 +564,3 @@ for data_var in sorted(loaded.data_vars):
     
     plt.tight_layout()
     plt.show()
-
-# %%
