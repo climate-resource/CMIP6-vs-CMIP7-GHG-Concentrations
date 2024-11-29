@@ -1245,6 +1245,17 @@ files = [
 ]
 
 [[package]]
+name = "globalwarmingpotentials"
+version = "0.11.1"
+description = "Global warming potentials of greenhouse gases from various IPCC reports"
+optional = false
+python-versions = "*"
+files = [
+    {file = "globalwarmingpotentials-0.11.1-py2.py3-none-any.whl", hash = "sha256:0f208afdaea1e464b1d2f760f06ab09e3870876c48a322252536809a5087ed11"},
+    {file = "globalwarmingpotentials-0.11.1.tar.gz", hash = "sha256:c0d98d6fe7fb7d21bc2c17d7b41dfdf5a08b3a80778943e1f0d2f7f29372038b"},
+]
+
+[[package]]
 name = "greenlet"
 version = "3.0.3"
 description = "Lightweight in-process concurrent programming"
@@ -2537,6 +2548,26 @@ files = [
 
 [package.dependencies]
 et-xmlfile = "*"
+
+[[package]]
+name = "openscm-units"
+version = "0.6.3"
+description = "Handling of units related to simple climate modelling."
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "openscm_units-0.6.3-py3-none-any.whl", hash = "sha256:3837e2d6fe2f641e63c731787fcaad8e6e3baabb62d673f2903bfcc863e8fce8"},
+    {file = "openscm_units-0.6.3.tar.gz", hash = "sha256:36f4e62b7622498df82895fbb89a63e19e2e686a74ad28e0679dd8f46d3c59b9"},
+]
+
+[package.dependencies]
+globalwarmingpotentials = "*"
+numpy = "*"
+pandas = "*"
+pint = "*"
+
+[package.extras]
+locked = ["appdirs (==1.4.4)", "flexcache (==0.3)", "flexparser (==0.3.1)", "globalwarmingpotentials (==0.11.1)", "numpy (==2.0.2)", "pandas (==2.2.3)", "pint (==0.24.3)", "python-dateutil (==2.9.0.post0)", "pytz (==2024.2)", "six (==1.16.0)", "typing-extensions (==4.12.2)", "tzdata (==2024.2)"]
 
 [[package]]
 name = "overrides"
@@ -4434,4 +4465,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "5d7df5a6b196b9d30dc7623b32b652d37f66cb5c4a5c105b2c10f29c1f2a129f"
+content-hash = "dc57a6e3e2bb1d2db2338ab18fa73ff01c2c45ad45acb9aa1f74e61319b5d320"
