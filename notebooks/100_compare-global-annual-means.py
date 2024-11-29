@@ -519,6 +519,8 @@ for time_range in (
     fig.suptitle(time_range)
     
     plt.tight_layout()
+
+    fig.savefig(f"comparison_{time_range[0]}-{time_range[-1]}.pdf")
     plt.show()
 
 # %%
