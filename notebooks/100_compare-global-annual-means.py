@@ -596,8 +596,8 @@ for k, v in RADIATIVE_EFFICIENCIES.items():
 rad_eff_match_units
 
 # %%
-# for data_var in sorted(loaded.data_vars):
-for data_var in ["co2", "ch4", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11", "cfc12", "hfc134a"]:
+for data_var in sorted(loaded.data_vars):
+# for data_var in ["co2", "ch4", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11", "cfc12", "hfc134a"]:
     if "bnds" in data_var:
         continue
 
@@ -656,5 +656,3 @@ for data_var in ["co2", "ch4", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11"
     plt.show()
 
     # break
-
-# %%
