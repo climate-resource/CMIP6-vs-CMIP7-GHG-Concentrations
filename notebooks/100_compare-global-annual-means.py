@@ -441,7 +441,39 @@ velders_df = velders_df.iloc[:-1, :]
 velders_df.iloc[:, :] = tmp
 velders_df = velders_df.reset_index()
 
+# # While waiting for Guus' update
+# velders_df_raw = pd.read_csv(PROCESSED_DATA_DIR / ".." / ".." / ".." / "CMIP-GHG-Concentration-Generation" / "output-bundles/dev-test-run/data/interim/velders-et-al-2022/velders_et_al_2022.csv")
+# velders_df = velders_df_raw.pivot(columns="gas", index="year", values="value").reset_index()
+# velders_df["source"] = velders_source
+
 velders_df
+
+# %% [markdown]
+# ## Load Droste et al. 2020 data
+
+# %%
+droste_source = "Droste et al., 2020"
+
+def to_plotable_droste(idf: pd.DataFrame) -> pd.DataFrame:
+    out = idf.pivot(columns="gas", index="year", values="value").reset_index()
+    station = idf["station"].unique()
+    if len(station) > 1:
+        raise AssertionError
+
+    station = station[0]
+    out["source"] = f"{droste_source}: {station}"
+
+    return out
+
+
+# %%
+droste_df_raw = pd.read_csv(PROCESSED_DATA_DIR / "droste-et-al-2020" / "pfcs_data.csv")
+droste_df = droste_df_raw.copy()
+
+droste_df_cg = to_plotable_droste(droste_df[droste_df["station"] == "Cape Grim"])
+droste_df_tal = to_plotable_droste(droste_df[droste_df["station"] == "Talconeston"])
+
+droste_df_tal
 
 # %% [markdown]
 # ## Plot
@@ -472,6 +504,8 @@ palette = {
     western_source: "tab:green",
     CMIP6_SOURCE_ID: "tab:purple",
     CMIP7_COMPARE_SOURCE_ID: "tab:red",
+    f"{droste_source}: Cape Grim": "tab:green",
+    f"{droste_source}: Talconeston": "tab:red",
     "CR-CMIP-0-3-0": "tab:gray",
 }
 
@@ -505,7 +539,18 @@ for time_range in (
             pdf = pd.concat([pdf, velders_df[["year", "source", data_var]]]).reset_index(drop=True)
         else:
             print(f"{data_var} not in Velders et al., 2022")
+            
+        if data_var in droste_df_cg:
+            pdf = pd.concat([pdf, droste_df_cg[["year", "source", data_var]]]).reset_index(drop=True)
+        else:
+            print(f"{data_var} not in Droste et al., 2022, Cape Grim")
+            
+        if data_var in droste_df_tal:
+            pdf = pd.concat([pdf, droste_df_tal[["year", "source", data_var]]]).reset_index(drop=True)
+        else:
+            print(f"{data_var} not in Droste et al., 2022, Tacloneston")
 
+         
         
         pdf = pdf[pdf["year"].isin(time_range)]
         
