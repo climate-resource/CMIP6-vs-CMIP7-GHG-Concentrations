@@ -59,7 +59,8 @@ else:
 data_path
 
 # %%
-local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
+# local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
+local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.4.0/data/processed/esgf-ready/input4MIPs"
 local_data_path
 
 # %%
@@ -71,9 +72,10 @@ drs_default = DataReferenceSyntax(
     )
 
 CMIP6_SOURCE_ID = "UoM-CMIP-1-2-0"
-CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-testing"
+CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-0-4-0"
 source_id_drs_map = {
     "CR-CMIP-0-3-0": drs_default,
+    "CR-CMIP-0-4-0": drs_default,
     "CR-CMIP-testing": drs_default,
     # "CR-CMIP-0-2-1a1-dev": drs_default,
     "UoM-CMIP-1-2-0": drs_default,
@@ -503,10 +505,11 @@ palette = {
     velders_source: "tab:cyan",
     western_source: "tab:green",
     CMIP6_SOURCE_ID: "tab:purple",
-    CMIP7_COMPARE_SOURCE_ID: "tab:red",
+    CMIP7_COMPARE_SOURCE_ID: "tab:blue",
     f"{droste_source}: Cape Grim": "tab:green",
     f"{droste_source}: Talconeston": "tab:red",
     "CR-CMIP-0-3-0": "tab:gray",
+    # "CR-CMIP-0-4-0": "tab:blue",
 }
 
 # %%
@@ -725,6 +728,7 @@ for data_var in sorted(loaded.data_vars):
 
     for time_axis, ax in ((slice(None, None), "all"), (slice(1950, None), "recent"), (slice(1750, None), "historical")):
         difference_rel.sel(year=time_axis).plot.line(x="year", hue="source_id", alpha=0.9, ax=axes[ax])
+        axes[ax].set_ylim([-10, 10])
 
     fig.suptitle(f"{parray.name} percentage difference ({CMIP7_COMPARE_SOURCE_ID} - {CMIP6_SOURCE_ID})")
     
@@ -732,3 +736,5 @@ for data_var in sorted(loaded.data_vars):
     plt.show()
 
     # break
+
+# %%
