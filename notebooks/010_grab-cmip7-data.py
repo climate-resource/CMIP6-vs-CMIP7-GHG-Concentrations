@@ -18,13 +18,13 @@
 # Here we grab the CMIP7 data we want.
 
 # %%
-# Will switch to CMIP7 at some point
 CMIP7_VERSION_PROJECT = "input4MIPs"
+# Will switch to CMIP7 at some point
 CMIP7_VERSION_MIP_ERA = "CMIP6Plus"
-CMIP7_VERSION_SOURCE_ID = "CR-CMIP-0-3-0"
+CMIP7_VERSION_SOURCE_ID = "CR-CMIP-0-4-0"
 CMIP7_VERSION_GRID = "gm"
 CMIP7_VERSION_FREQUENCY = "yr"
-SEARCH_TAG = "cmip7-global-mean-yearly"
+SEARCH_TAG = f"cmip7-global-mean-yearly-{CMIP7_VERSION_SOURCE_ID.lower()}"
 
 # %%
 # !esgpull add --tag {SEARCH_TAG} --track project:{CMIP7_VERSION_PROJECT} mip_era:{CMIP7_VERSION_MIP_ERA} source_id:{CMIP7_VERSION_SOURCE_ID} grid_label:{CMIP7_VERSION_GRID} frequency:{CMIP7_VERSION_FREQUENCY}
