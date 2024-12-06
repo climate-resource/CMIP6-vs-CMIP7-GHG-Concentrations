@@ -19,9 +19,11 @@
 
 # %%
 import os
+import re
 import subprocess
-
+import tomllib
 from pathlib import Path
+from typing import TypeVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,6 +33,7 @@ import pint
 import seaborn as sns
 import tqdm
 import xarray as xr
+from esgpull.cli.utils import init_esgpull
 from input4mips_validation.cvs.drs import DataReferenceSyntax
 
 from utils import PROCESSED_DATA_DIR, RAW_DATA_DIR
@@ -43,24 +46,15 @@ Q = pint.get_application_registry().Quantity
 # # Load CMIP data
 
 # %%
-# Someone can explain a better way to do this to me another day
-esgpull_config_raw = subprocess.check_output(
-    ["esgpull", "config"]
-).decode("utf-8")
-for line in esgpull_config_raw.splitlines():
-    if "data" in line:
-        data_path = Path(line.split("[33m")[-2].split("\x1b")[0])
-        break
+esg = init_esgpull(verbosity=0, load_db=False)
 
-else:
-    msg = "Data path not found in esgpull config"
-    raise AssertionError(msg)
-
-data_path
+# %%
+data_path = esg.config.paths.data
 
 # %%
 # local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
-local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.4.0/data/processed/esgf-ready/input4MIPs"
+# local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.4.0/data/processed/esgf-ready/input4MIPs"
+local_data_path = None
 local_data_path
 
 # %%
@@ -77,14 +71,18 @@ source_id_drs_map = {
     "CR-CMIP-0-3-0": drs_default,
     "CR-CMIP-0-4-0": drs_default,
     "CR-CMIP-testing": drs_default,
-    # "CR-CMIP-0-2-1a1-dev": drs_default,
     "UoM-CMIP-1-2-0": drs_default,
 }
 source_id_drs_map
 
 # %%
 db_l = []
-for file in tqdm.tqdm([*local_data_path.rglob("**/yr/**/*gm*.nc"), *data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")], desc="Extracting file metadata"):
+
+files_to_parse = [*data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")]
+if local_data_path is not None:
+    files_to_parse = [*files_to_parse, *local_data_path.rglob("**/yr/**/*gm*.nc")]
+    
+for file in tqdm.tqdm(files_to_parse, desc="Extracting file metadata"):
     for source_id in source_id_drs_map:
         if source_id in str(file):
             drs = source_id_drs_map[source_id]
@@ -736,5 +734,3 @@ for data_var in sorted(loaded.data_vars):
     plt.show()
 
     # break
-
-# %%
