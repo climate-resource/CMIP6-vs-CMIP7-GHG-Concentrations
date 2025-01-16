@@ -53,9 +53,9 @@ data_path = esg.config.paths.data
 data_path
 
 # %%
-# local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
+local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
 # local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.4.0/data/processed/esgf-ready/input4MIPs"
-local_data_path = None
+# local_data_path = None
 local_data_path
 
 # %%
@@ -521,10 +521,12 @@ palette = {
     f"{droste_source}: Talconeston": "tab:red",
     "CR-CMIP-0-3-0": "tab:gray",
     # "CR-CMIP-0-4-0": "tab:blue",
+    "CR-CMIP-testing": "tab:pink",
 }
 
 # %%
 for time_range in (
+    # range(1980, 2005 + 1),
     range(1940, 2025 + 1),
     range(2000, 2025 + 1),
     range(1750, 2025 + 1),
