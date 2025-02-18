@@ -68,6 +68,7 @@ drs_default = DataReferenceSyntax(
 
 CMIP6_SOURCE_ID = "UoM-CMIP-1-2-0"
 CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-0-4-0"
+
 source_id_drs_map = {
     "CR-CMIP-0-3-0": drs_default,
     "CR-CMIP-0-4-0": drs_default,
@@ -257,64 +258,64 @@ def load_cmip7_data(fps: list[Path]) -> xr.Dataset:
 to_load = db[(db["frequency"] == "yr") & (db["variable_normalised"].isin([
     # "co2", 
     # "ch4", 
-    # "n2o",
+    "n2o",
     
-    # # # WMO 2022 Ch. 7 variables start
-    # "cfc11",
-    # "cfc12",
-    # "cfc113",
-    # "cfc114",
-    # "cfc115",
-    # "ccl4",
-    # "ch3ccl3",
-    # "halon1211",
-    # "halon1301",
-    # "halon2402",
-    # # halon 1202 not included anywhere, likely because very tiny
-    # "ch3br",
-    # "ch3cl",
-    # # # Western variables start
-    # "hcfc141b",
-    # "hcfc142b",
-    # "hcfc22",
-    # # Western variables end
-    # # WMO 2022 Ch. 7 variables end
+    # # # # WMO 2022 Ch. 7 variables start
+    # # "cfc11",
+    # # "cfc12",
+    # # "cfc113",
+    # # "cfc114",
+    # # "cfc115",
+    # # "ccl4",
+    # # "ch3ccl3",
+    # # "halon1211",
+    # # "halon1301",
+    # # "halon2402",
+    # # # halon 1202 not included anywhere, likely because very tiny
+    # # "ch3br",
+    # # "ch3cl",
+    # # # # Western variables start
+    # # "hcfc141b",
+    # # "hcfc142b",
+    # # "hcfc22",
+    # # # Western variables end
+    # # # WMO 2022 Ch. 7 variables end
     
-    # # # Velders et al., 2022 variables start
-    # "hfc32",
-    # "hfc125",
-    # "hfc134a",
-    # "hfc143a",
-    # "hfc152a",
-    # "hfc227ea",
-    # "hfc236fa",
-    # "hfc245fa",
-    # "hfc365mfc",
-    # "hfc4310mee",
-    # # # Velders et al., 2022 variables end
+    # # # # Velders et al., 2022 variables start
+    # # "hfc32",
+    # # "hfc125",
+    # # "hfc134a",
+    # # "hfc143a",
+    # # "hfc152a",
+    # # "hfc227ea",
+    # # "hfc236fa",
+    # # "hfc245fa",
+    # # "hfc365mfc",
+    # # "hfc4310mee",
+    # # # # Velders et al., 2022 variables end
 
-    # # Equivalent species start
-    # "cfc11eq",
-    # "cfc12eq",
-    # "hfc134aeq",
-    # # Equivalent species end
+    # # # Equivalent species start
+    # # "cfc11eq",
+    # # "cfc12eq",
+    # # "hfc134aeq",
+    # # # Equivalent species end
     
-    # # Other
-    "hfc23",
-    # "cf4",
-    # "c2f6",
-    # "c3f8",
-    # "c4f10",
-    # "c5f12",
-    # "c6f14",
-    # "c7f16",
-    # "c8f18",
-    # "cc4f8",
-    # "ch2cl2",
-    # "chcl3",
-    # "nf3",
-    # "sf6",
-    # "so2f2",
+    # # # Other
+    # "hfc23",
+    # # "cf4",
+    # # "c2f6",
+    # # "c3f8",
+    # # "c4f10",
+    # # "c5f12",
+    # # "c6f14",
+    # # "c7f16",
+    # # "c8f18",
+    # # "cc4f8",
+    # # "ch2cl2",
+    # # "chcl3",
+    # # "nf3",
+    # # "sf6",
+    # # "so2f2",
 ]))]
 to_load
 
@@ -527,6 +528,8 @@ palette = {
 # %%
 for time_range in (
     # range(1980, 2005 + 1),
+    range(1, 2025 + 1),
+    range(1825, 1875 + 1),
     range(1940, 2025 + 1),
     range(2000, 2025 + 1),
     range(1750, 2025 + 1),
@@ -672,6 +675,9 @@ for k, v in RADIATIVE_EFFICIENCIES.items():
 rad_eff_match_units
 
 # %%
+# CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-testing"
+
+# %%
 for data_var in sorted(loaded.data_vars):
 # for data_var in ["co2", "ch4", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11", "cfc12", "hfc134a"]:
     if "bnds" in data_var:
@@ -686,7 +692,7 @@ for data_var in sorted(loaded.data_vars):
     difference = parray.sel(source_id=CMIP7_COMPARE_SOURCE_ID) - parray.sel(source_id=CMIP6_SOURCE_ID)
     difference_erf = difference * rad_eff_match_units[difference.name]
 
-    difference_erf_max = difference_erf.max().data
+    difference_erf_max = np.abs(difference_erf).max().data
     if difference_erf_max.m > 0.01:  # "W / m^2"
         print("!!! Look here !!!")
     print(f"{data_var}: {difference_erf_max=:.3e}")
