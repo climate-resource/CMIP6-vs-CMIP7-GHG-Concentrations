@@ -53,8 +53,8 @@ data_path = esg.config.paths.data
 data_path
 
 # %%
-local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
-# local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.4.0/data/processed/esgf-ready/input4MIPs"
+# local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
+local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.5.0/data/processed/esgf-ready/input4MIPs"
 # local_data_path = None
 local_data_path
 
@@ -67,20 +67,26 @@ drs_default = DataReferenceSyntax(
     )
 
 CMIP6_SOURCE_ID = "UoM-CMIP-1-2-0"
-CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-0-4-0"
+CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-0-5-0"
 
 source_id_drs_map = {
-    "CR-CMIP-0-3-0": drs_default,
-    "CR-CMIP-0-4-0": drs_default,
+    # "CR-CMIP-0-3-0": drs_default,
+    # "CR-CMIP-0-4-0": drs_default,
+    "CR-CMIP-0-5-0": drs_default,
     "CR-CMIP-testing": drs_default,
     "UoM-CMIP-1-2-0": drs_default,
 }
 source_id_drs_map
 
 # %%
+
+# %%
 db_l = []
 
-files_to_parse = [*data_path.rglob("*gm*.nc"), *data_path.rglob("*gr1-GMNHSH*.nc")]
+files_to_parse = [
+    *[f for f in data_path.rglob("*gm*.nc") if "0-4-0" not in str(f) and "0-3-0" not in str(f)], 
+    *data_path.rglob("*gr1-GMNHSH*.nc"),
+]
 if local_data_path is not None:
     files_to_parse = [*files_to_parse, *local_data_path.rglob("**/yr/**/*gm*.nc")]
     
@@ -256,66 +262,66 @@ def load_cmip7_data(fps: list[Path]) -> xr.Dataset:
 
 # %%
 to_load = db[(db["frequency"] == "yr") & (db["variable_normalised"].isin([
-    # "co2", 
-    # "ch4", 
+    "co2", 
+    "ch4", 
     "n2o",
     
-    # # # # WMO 2022 Ch. 7 variables start
-    # # "cfc11",
-    # # "cfc12",
-    # # "cfc113",
-    # # "cfc114",
-    # # "cfc115",
-    # # "ccl4",
-    # # "ch3ccl3",
-    # # "halon1211",
-    # # "halon1301",
-    # # "halon2402",
-    # # # halon 1202 not included anywhere, likely because very tiny
-    # # "ch3br",
-    # # "ch3cl",
-    # # # # Western variables start
-    # # "hcfc141b",
-    # # "hcfc142b",
-    # # "hcfc22",
-    # # # Western variables end
-    # # # WMO 2022 Ch. 7 variables end
+    # # WMO 2022 Ch. 7 variables start
+    "cfc11",
+    "cfc12",
+    "cfc113",
+    "cfc114",
+    "cfc115",
+    "ccl4",
+    "ch3ccl3",
+    "halon1211",
+    "halon1301",
+    "halon2402",
+    # halon 1202 not included anywhere, likely because very tiny
+    "ch3br",
+    "ch3cl",
+    # # Western variables start
+    "hcfc141b",
+    "hcfc142b",
+    "hcfc22",
+    # Western variables end
+    # WMO 2022 Ch. 7 variables end
     
-    # # # # Velders et al., 2022 variables start
-    # # "hfc32",
-    # # "hfc125",
-    # # "hfc134a",
-    # # "hfc143a",
-    # # "hfc152a",
-    # # "hfc227ea",
-    # # "hfc236fa",
-    # # "hfc245fa",
-    # # "hfc365mfc",
-    # # "hfc4310mee",
-    # # # # Velders et al., 2022 variables end
+    # # Velders et al., 2022 variables start
+    "hfc32",
+    "hfc125",
+    "hfc134a",
+    "hfc143a",
+    "hfc152a",
+    "hfc227ea",
+    "hfc236fa",
+    "hfc245fa",
+    "hfc365mfc",
+    "hfc4310mee",
+    # # Velders et al., 2022 variables end
 
-    # # # Equivalent species start
-    # # "cfc11eq",
-    # # "cfc12eq",
-    # # "hfc134aeq",
-    # # # Equivalent species end
+    # Equivalent species start
+    "cfc11eq",
+    "cfc12eq",
+    "hfc134aeq",
+    # Equivalent species end
     
-    # # # Other
-    # "hfc23",
-    # # "cf4",
-    # # "c2f6",
-    # # "c3f8",
-    # # "c4f10",
-    # # "c5f12",
-    # # "c6f14",
-    # # "c7f16",
-    # # "c8f18",
-    # # "cc4f8",
-    # # "ch2cl2",
-    # # "chcl3",
-    # # "nf3",
-    # # "sf6",
-    # # "so2f2",
+    # # Other
+    "hfc23",
+    "cf4",
+    "c2f6",
+    "c3f8",
+    "c4f10",
+    "c5f12",
+    "c6f14",
+    "c7f16",
+    "c8f18",
+    "cc4f8",
+    "ch2cl2",
+    "chcl3",
+    "nf3",
+    "sf6",
+    "so2f2",
 ]))]
 to_load
 
@@ -673,9 +679,6 @@ for k, v in RADIATIVE_EFFICIENCIES.items():
         rad_eff_match_units[k] = v.to("W / m^2 / ppt")
         
 rad_eff_match_units
-
-# %%
-# CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-testing"
 
 # %%
 for data_var in sorted(loaded.data_vars):
