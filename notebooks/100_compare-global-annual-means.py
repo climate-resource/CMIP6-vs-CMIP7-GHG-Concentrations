@@ -79,8 +79,6 @@ source_id_drs_map = {
 source_id_drs_map
 
 # %%
-
-# %%
 db_l = []
 
 files_to_parse = [
@@ -265,7 +263,6 @@ to_load = db[(db["frequency"] == "yr") & (db["variable_normalised"].isin([
     "co2", 
     "ch4", 
     "n2o",
-    
     # # WMO 2022 Ch. 7 variables start
     "cfc11",
     "cfc12",
@@ -532,11 +529,20 @@ palette = {
 }
 
 # %%
+for data_var in loaded.data_vars:
+    if "bnds" in data_var:
+        continue
+    
+    if loaded[data_var].min() > 0.0:
+        print(data_var)
+        print(loaded[data_var].min())
+
+# %%
 for time_range in (
     # range(1980, 2005 + 1),
     range(1, 2025 + 1),
     range(1825, 1875 + 1),
-    range(1940, 2025 + 1),
+    range(1900, 2025 + 1),
     range(2000, 2025 + 1),
     range(1750, 2025 + 1),
 ):
@@ -603,7 +609,7 @@ for time_range in (
     
     plt.tight_layout()
 
-    fig.savefig(f"comparison_{time_range[0]}-{time_range[-1]}.pdf")
+    # fig.savefig(f"comparison_{time_range[0]}-{time_range[-1]}.pdf")
     plt.show()
 
 # %%
