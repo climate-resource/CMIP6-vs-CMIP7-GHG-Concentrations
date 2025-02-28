@@ -54,7 +54,7 @@ data_path
 
 # %%
 # local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/dev-test-run/data/processed/esgf-ready/input4MIPs"
-local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v0.5.0/data/processed/esgf-ready/input4MIPs"
+local_data_path = (Path(".").absolute()) / ".." / ".." / "CMIP-GHG-Concentration-Generation/output-bundles/v1.0.0/data/processed/esgf-ready/input4MIPs"
 # local_data_path = None
 local_data_path
 
@@ -67,12 +67,12 @@ drs_default = DataReferenceSyntax(
     )
 
 CMIP6_SOURCE_ID = "UoM-CMIP-1-2-0"
-CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-0-5-0"
+CMIP7_COMPARE_SOURCE_ID = "CR-CMIP-1-0-0"
 
 source_id_drs_map = {
     # "CR-CMIP-0-3-0": drs_default,
     # "CR-CMIP-0-4-0": drs_default,
-    "CR-CMIP-0-5-0": drs_default,
+    "CR-CMIP-1-0-0": drs_default,
     "CR-CMIP-testing": drs_default,
     "UoM-CMIP-1-2-0": drs_default,
 }
@@ -687,6 +687,7 @@ for k, v in RADIATIVE_EFFICIENCIES.items():
 rad_eff_match_units
 
 # %%
+data_vars_to_look_at = []
 for data_var in sorted(loaded.data_vars):
 # for data_var in ["co2", "ch4", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11", "cfc12", "hfc134a"]:
     if "bnds" in data_var:
@@ -703,13 +704,15 @@ for data_var in sorted(loaded.data_vars):
 
     difference_erf_max = np.abs(difference_erf).max().data
     if difference_erf_max.m > 0.01:  # "W / m^2"
+        data_vars_to_look_at.append(data_var)
         print("!!! Look here !!!")
     print(f"{data_var}: {difference_erf_max=:.3e}")
     print()
 
 # %%
-for data_var in sorted(loaded.data_vars):
-# for data_var in ["co2", "ch4", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11", "cfc12", "hfc134a"]:
+# for data_var in sorted(loaded.data_vars):
+# for data_var in ["co2", "n2o", "cfc11eq", "cfc12eq", "hfc134aeq", "cfc11", "cfc12", "hfc134a"]:
+for data_var in sorted(data_vars_to_look_at):
     if "bnds" in data_var:
         continue
 
