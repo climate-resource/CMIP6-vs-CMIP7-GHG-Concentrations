@@ -159,70 +159,23 @@ CMIP6_TO_CMIP7_VARIABLE_MAP = {
     'mole_fraction_of_hfc134aeq_in_air': 'hfc134aeq',
 }
 
-# %%
-CMIP7_TO_NORMAL_VARIABLE_MAP = {
-    'co2': 'co2',
-    'ch4': 'ch4',
-    'n2o': 'n2o',
-    'pfc116': 'c2f6',
-    'pfc218': 'c3f8',
-    'pfc3110': 'c4f10',
-    'pfc4112': 'c5f12',
-    'pfc5114': 'c6f14',
-    'pfc6116': 'c7f16',
-    'pfc7118': 'c8f18',
-    'pfc318': 'cc4f8',
-    'ccl4': 'ccl4',
-    'cf4': 'cf4',
-    'cfc11': 'cfc11',
-    'cfc113': 'cfc113',
-    'cfc114': 'cfc114',
-    'cfc115': 'cfc115',
-    'cfc12': 'cfc12',
-    'ch2cl2': 'ch2cl2',
-    'ch3br': 'ch3br',
-    'hcc140a': 'ch3ccl3',
-    'ch3cl': 'ch3cl',
-    'chcl3': 'chcl3',
-    'halon1211': 'halon1211',
-    'halon1301': 'halon1301',
-    'halon2402': 'halon2402',
-    'hcfc141b': 'hcfc141b',
-    'hcfc142b': 'hcfc142b',
-    'hcfc22': 'hcfc22',
-    'hfc125': 'hfc125',
-    'hfc134a': 'hfc134a',
-    'hfc143a': 'hfc143a',
-    'hfc152a': 'hfc152a',
-    'hfc227ea': 'hfc227ea',
-    'hfc23': 'hfc23',
-    'hfc236fa': 'hfc236fa',
-    'hfc245fa': 'hfc245fa',
-    'hfc32': 'hfc32',
-    'hfc365mfc': 'hfc365mfc',
-    'hfc4310mee': 'hfc4310mee',
-    'nf3': 'nf3',
-    'sf6': 'sf6',
-    'so2f2': 'so2f2',
-    'cfc11eq': 'cfc11eq',
-    'cfc12eq': 'cfc12eq',
-    'hfc134aeq': 'hfc134aeq',
-}
-
 
 # %%
 def normalise_variable_names(v: str) -> str:
     if v in CMIP6_TO_CMIP7_VARIABLE_MAP:
         return CMIP6_TO_CMIP7_VARIABLE_MAP[v]
-        
-    if v in CMIP7_TO_NORMAL_VARIABLE_MAP:
-        return CMIP7_TO_NORMAL_VARIABLE_MAP[v]
 
     return v
 
 
 db["variable_normalised"] = db["variable_id"].apply(normalise_variable_names)
+
 assert not [v for v in db["variable_normalised"].unique() if "mole" in v]
+
+if len(db["variable_normalised"].unique()) != 46:
+    msg = "Something wrong with the mapping"
+    raise AssertionError(msg)
+    
 db
 
 
