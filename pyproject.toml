@@ -11,6 +11,12 @@ dependencies = [
     "jupyterlab>=4.0.0",
     "jupytext>=1.15.2",
     "intake-esgf>=2024.12.7",
+    "pandas-openscm",
+    "input4mips-validation>=0.19.1",
+    "pyarrow>=19.0.1",
+    "pandas-indexing>=0.6.3",
+    "seaborn>=0.13.2",
+    "openscm-units>=0.6.3",
 ]
 readme = "README.md"
 
@@ -46,3 +52,6 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.uv.sources]
+pandas-openscm = { git = "https://github.com/openscm/pandas-openscm", rev = "c12ca16" }
