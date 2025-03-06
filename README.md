@@ -24,19 +24,16 @@ on your repository where you're up to. Some suggested options:
 
 ## Installation
 
-We do all our environment management using
-[poetry](https://python-poetry.org/). To get started, you will need to make
-sure that poetry is installed
-([instructions here](https://python-poetry.org/docs/#installing-with-the-official-installer),
-we found that pipx and pip worked better to install on a Mac).
+We do all our environment management using [uv](https://docs.astral.sh/uv/).
+To get started, you will need to make sure that uv is installed
+([instructions here](https://docs.astral.sh/uv/getting-started/installation/),
+we found that using uv's standalone installer was best on a Mac).
 
 To create the virtual environment, run
 
 ```sh
-# Tell poetry to put virtual environments in the project
-poetry config virtualenvs.in-project true
-poetry install --all-extras
-poetry run pre-commit install
+uv install
+uv run pre-commit install
 ```
 
 These steps are also captured in the `Makefile` so if you want a single
@@ -46,19 +43,19 @@ Having installed your virtual environment, you can now run commands in your
 virtual environment using
 
 ```sh
-poetry run <command>
+uv run <command>
 ```
 
 For example, to run Python within the virtual environment, run
 
 ```sh
-poetry run python
+uv run python
 ```
 
 As another example, to run a notebook server, run
 
 ```sh
-poetry run jupyter notebook
+uv run jupyter lab
 ```
 
 ## Analysis
@@ -114,17 +111,17 @@ In this repository, we use the following tools:
     - for these purposes, git is a great version-control system so we don't
       complicate things any further. For an introduction to Git, see
       [this introduction from Software Carpentry](http://swcarpentry.github.io/git-novice/).
-- [Poetry](https://python-poetry.org/docs/) for environment management
+- [uv](https://docs.astral.sh/uv/) for environment management
   (for more on environment management, see
   [general principles: environment management](https://gitlab.com/znicholls/mullet-rse/-/blob/main/book/theory/environment-management.md))
-    - there are lots of environment management systems. Poetry works and for
-      simple projects like this there is no need to overcomplicate things
-    - we track the `poetry.lock` file so that the environment is completely
-      reproducible on other machines or by other people (e.g. if you want a
-      colleague to take a look at what you've done)
+    - there are lots of environment management systems.
+      uv works well in our experience.
+    - we track the `uv.lock` file so that the environment
+      is completely reproducible on other machines or by other people
+      (e.g. if you want a colleague to take a look at what you've done)
 - [pre-commit](https://pre-commit.com/) with some very basic settings to get some
   easy wins in terms of maintenance, specifically:
-    - code formatting with [black](https://black.readthedocs.io/en/stable/)
+    - code formatting with [ruff](https://docs.astral.sh/ruff/formatter/)
     - basic file checks (removing unneeded whitespace, not committing large
       files etc.)
     - (for more thoughts on the usefulness of pre-commit, see
