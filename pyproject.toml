@@ -1,4 +1,7 @@
 [project]
+name = "local"
+version = "0.1.0"
+description = "Local tooling to support the comparison of greenhouse gas concentrations used in CMIP6 vs. CMIP7"
 authors = [
     { name = "Zebedee Nicholls", email = "zebedee.nicholls@climate-resource.com"},
 ]
@@ -7,11 +10,15 @@ dependencies = [
     "pre-commit>=3.3.1",
     "jupyterlab>=4.0.0",
     "jupytext>=1.15.2",
+    "intake-esgf>=2024.12.7",
 ]
-name = "prototype"
-version = "0.1.0"
-description = "Comparison of greenhouse gas concentrations used in CMIP6 vs. CMIP7"
 readme = "README.md"
+
+# TODO: automatically include a local in the copier repo
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
 
 [tool.jupytext]
 formats = "ipynb,py:percent"
