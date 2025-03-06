@@ -206,7 +206,7 @@ def load_cmip6_data(fps: list[Path]) -> xr.Dataset:
 def load_cmip7_data(fps: list[Path]) -> xr.Dataset:
     out = xr.open_mfdataset(fps, use_cftime=True).compute()
 
-    out = out.rename({k: v for k, v in CMIP7_TO_NORMAL_VARIABLE_MAP.items() if k in out.data_vars})
+    # out = out.rename({k: v for k, v in CMIP7_TO_NORMAL_VARIABLE_MAP.items() if k in out.data_vars})
 
     return out
 
@@ -595,7 +595,7 @@ RADIATIVE_EFFICIENCIES: dict[str, pint.UnitRegistry.Quantity] = {
     "hfc125": Q(0.234, "W / m^2 / ppb"),
     "hfc134a": Q(0.167, "W / m^2 / ppb"),
     "hfc134aeq": Q(0.167, "W / m^2 / ppb"),
-    "hfc143a": Q(0.168, "W / m^2 / ppb"),
+    "hfc143a": Q(0.167, "W / m^2 / ppb"),
     "hfc152a": Q(0.102, "W / m^2 / ppb"),
     "hfc227ea": Q(0.273, "W / m^2 / ppb"),
     "hfc236fa": Q(0.251, "W / m^2 / ppb"),
@@ -725,3 +725,66 @@ for data_var in sorted(data_vars_to_look_at):
     plt.show()
 
     # break
+
+# %%
+# convert to ERF (approx)
+# calculate diff
+
+# %%
+erf_d = {}
+for gas in loaded.data_vars:
+    if "bnds" in gas:
+        continue
+
+    erf_d[gas] = loaded[gas] * rad_eff_match_units[gas].m
+
+erf = xr.Dataset(data_vars=erf_d)
+erf
+
+# %%
+tmp_conc = loaded.drop_vars("sector_bnds").sel(year=1850).to_pandas().T
+tmp_conc.columns = [f"{v}_conc" for v in tmp_conc.columns]
+
+# %%
+(pd.Series({k: v.m for k, v in rad_eff_match_units.items()}) * tmp[CMIP6_SOURCE_ID]).drop(["co2", "ch4", "n2o", "cfc12"])
+
+# %%
+pd.Series({k: v.m for k, v in rad_eff_match_units.items()}) * tmp[f"{CMIP6_SOURCE_ID}_conc"]
+
+# %%
+(pd.Series({k: v.m for k, v in rad_eff_match_units.items()}) * tmp[f"{CMIP6_SOURCE_ID}_conc"])[[
+    "cfc11", "cfc12", "cfc113", "cfc114", "cfc115",
+    "hcfc22", "hcfc141b", "hcfc142b",
+    "halon1211", "halon1301", "halon2402",
+    "ch3ccl3", "ccl4", "ch3cl", "ch2cl2", "chcl3", "ch3br"
+]
+].sum() / rad_eff_match_units["cfc12"].m
+
+# %%
+(pd.Series({k: v.m for k, v in rad_eff_match_units.items()}) * tmp[f"{CMIP7_COMPARE_SOURCE_ID}_conc"])[[
+    "cfc11", "cfc12", "cfc113", "cfc114", "cfc115",
+    "hcfc22", "hcfc141b", "hcfc142b",
+    "halon1211", "halon1301", "halon2402",
+    "ch3ccl3", "ccl4", "ch3cl", "ch2cl2", "chcl3", "ch3br"
+]
+].sum() / rad_eff_match_units["cfc12"].m
+
+# %%
+(pd.Series({k: v.m for k, v in rad_eff_match_units.items()}) * tmp[f"{CMIP6_SOURCE_ID}_conc"]).drop(["co2", "ch4", "n2o", "cfc12", "cfc11eq", "cfc12eq", "hfc134aeq"]).sum() / rad_eff_match_units["cfc11"].m
+
+# %%
+(pd.Series({k: v.m for k, v in rad_eff_match_units.items()}) * tmp[f"{CMIP7_COMPARE_SOURCE_ID}_conc"]).drop(["co2", "ch4", "n2o", "cfc12", "cfc11eq", "cfc12eq", "hfc134aeq"]).sum() / rad_eff_match_units["cfc11"].m
+
+# %%
+loaded["cfc11eq"].plot(hue="source_id")
+
+# %%
+tmp = pd.concat([erf.sel(year=1850).to_pandas().T.astype(float).round(4), tmp_conc], axis="columns").drop("year")
+tmp["diff"] = tmp[CMIP7_COMPARE_SOURCE_ID] - tmp[CMIP6_SOURCE_ID]
+tmp["diff_abs"] = tmp["diff"].abs()
+tmp = tmp.sort_values("diff_abs", ascending=False)
+display(tmp[["diff", "diff_abs"]].sum())
+
+tmp
+
+# %%
