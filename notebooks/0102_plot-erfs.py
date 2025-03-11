@@ -94,6 +94,7 @@ ax = sns.lineplot(
     linewidth=2,
 )
 ax.set_title("Difference (CMIP7 - CMIP6)\nin radiative forcing (approx. as linearised)")
+ax.set_ylabel("W / m^2")
 # Notes:
 # - CO2 change from updated ice cores, more obs and better use of Scripps
 # - N2O change from updated ice cores
