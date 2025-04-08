@@ -13,7 +13,7 @@
 # ---
 
 # %% [markdown]
-# # Plot in ERF terms
+# # Plot in concentration terms
 
 # %% [markdown]
 # ## Imports
@@ -46,6 +46,41 @@ global_annual_mean = global_annual_mean.pix.assign(
     )
 )
 global_annual_mean
+
+# %%
+pdf = (
+    global_annual_mean.loc[
+        pix.isin(gas=["total", "co2", "ch4", "n2o", "cfc12eq", "hfc134aeq"]), 1750:
+    ]
+    .melt(ignore_index=False, var_name="time")
+    .reset_index()
+)
+
+fg = sns.relplot(
+    data=pdf,
+    x="time",
+    y="value",
+    hue="mip_era",
+    col="gas",
+    col_wrap=3,
+    kind="line",
+    # palette={
+    #     "total": "black",
+    #     "co2": "tab:blue",
+    #     "ch4": "tab:red",
+    #     "n2o": "tab:green",
+    #     "cfc12": "tab:purple",
+    #     "cfc11": "tab:olive",
+    #     "cfc12eq": "tab:purple",
+    #     "hfc134aeq": "tab:olive",
+    # },
+    alpha=0.7,
+    linewidth=3,
+    facet_kws=dict(sharey=False),
+)
+# ax.set_title("CMIP7 ERF (approx. as linearised)")
+# ax.set_ylabel("W / m^2")
+# ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
 
 # %%
 erfs = to_erf(global_annual_mean)
