@@ -49,10 +49,11 @@ global_annual_mean
 
 # %%
 erfs = to_erf(global_annual_mean)
+erfs_rel_pi = erfs.subtract(erfs[1850.5], axis="rows")
 
 # %%
 erf_total = (
-    erfs.loc[~pix.ismatch(gas="*eq")]
+    erfs_rel_pi.loc[~pix.ismatch(gas="*eq")]
     .groupby(erfs.index.names.difference(["gas"]))
     .sum(min_count=1)
     .pix.assign(gas="total")
@@ -60,13 +61,7 @@ erf_total = (
 erf_total
 
 # %%
-# Not really ERF
-ax = (
-    erf_total.subtract(erf_total[1750.5], axis="rows")
-    .pix.project("mip_era")
-    .T.loc[1750:2023]
-    .plot(linewidth=3, alpha=0.5)
-)
+ax = erf_total.pix.project("mip_era").T.loc[1750:2023].plot(linewidth=3, alpha=0.5)
 ax.set_title("Approx. (linearised) total GHG ERF")
 ax.set_ylabel("W  / m^2")
 
@@ -88,10 +83,16 @@ for time_min in [1, 1750]:
 # erf_total_diff.idxmax(axis="columns")
 
 # %%
-erfs_diff = erfs.reset_index("mip_era", drop=True).stack().unstack("source_id")
+erfs_diff = erfs_rel_pi.reset_index("mip_era", drop=True).stack().unstack("source_id")
 erfs_diff = erfs_diff[CMIP7_SOURCE_ID] - erfs_diff[CMIP6_SOURCE_ID]
 erfs_diff = erfs_diff.unstack().pix.assign(mip_era="CMIP7 - CMIP6")
-erfs_diff = pix.concat([erfs_diff, erf_total_diff])
+erfs_diff_total = (
+    erfs_diff.loc[pix.ismatch(gas=["co2", "ch4", "n2o", "cfc12eq", "hfc134aeq"])]
+    .groupby(erfs_diff.index.names.difference(["gas"]))
+    .sum()
+    .pix.assign(gas="total")
+)
+erfs_diff = pix.concat([erfs_diff, erfs_diff_total]).dropna(axis="columns")
 erfs_diff
 
 # %%
@@ -149,9 +150,7 @@ ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
 
 # %%
 # More like an ERF
-erf_total.subtract(erf_total[1750.5], axis="rows").pix.project("source_id").T.loc[
-    1750:2023
-].plot()
+erf_total.pix.project("source_id").T.loc[1750:2023].plot()
 
 # %%
 co2_eq_unit = "ppm"
@@ -167,7 +166,7 @@ co2_approx_var = "co2_eq_approx_marginal"
 ).loc[:, 1750:]
 
 # %%
-erf_true = erfs.subtract(erfs[1750.5], axis="rows")
+erf_true = erfs_rel_pi
 erf_true
 
 # %%
@@ -210,7 +209,15 @@ gas_order = ["co2", "ch4", "n2o", "cfc12eq", "hfc134aeq"]
 ax = (
     erf_true.loc[pix.isin(source_id=CMIP7_SOURCE_ID, gas=gas_order)]
     .pix.project("gas")
-    .T.loc[1750:, gas_order]
+    .T.loc[1850:, gas_order]
     .plot.area()
 )
+# ax = (
+#     erf_true.loc[pix.isin(source_id=CMIP7_SOURCE_ID, gas=gas_order)]
+#     .pix.project("gas")
+#     .T.loc[1750:1850, gas_order]
+#     .plot.area(ax=ax)
+# )
 ax.set_title("Approximate ERF contributions")
+
+# %%
