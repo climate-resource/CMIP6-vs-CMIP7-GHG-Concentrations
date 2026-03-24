@@ -1,27 +1,57 @@
-[tool.poetry]
-package-mode = false
-name = "prototype"
+[project]
+name = "local"
 version = "0.1.0"
-description = "Comparison of greenhouse gas concentrations used in CMIP6 vs. CMIP7"
-authors = ["Zebedee Nicholls <zebedee.nicholls@climate-resource.com>"]
+description = "Local tooling to support the comparison of greenhouse gas concentrations used in CMIP6 vs. CMIP7"
+authors = [
+    { name = "Zebedee Nicholls", email = "zebedee.nicholls@climate-resource.com"},
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pre-commit>=3.3.1",
+    "jupyterlab>=4.0.0",
+    "jupytext>=1.15.2",
+    "intake-esgf>=2024.12.7",
+    "pandas-openscm",
+    "input4mips-validation>=0.19.1",
+    "pyarrow>=19.0.1",
+    "pandas-indexing>=0.6.3",
+    "seaborn>=0.13.2",
+    "openscm-units>=0.6.3",
+]
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
-pre-commit = ">=3.3.1"
-notebook = ">=7.0.6"
-jupytext = ">=1.15.2"
-esgpull = "0.7.3"
-xarray = "^2024.7.0"
-input4mips-validation = "0.11.3"
-nc-time-axis = "^1.4.1"
-seaborn = "^0.13.2"
-openpyxl = "^3.1.5"
-openscm-units = "^0.6.3"
+# TODO: automatically include a local in the copier repo
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
 
 [tool.jupytext]
 formats = "ipynb,py:percent"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "D",
+    "PL",
+    "TRY",
+    "NPY",
+    "RUF",
+    "UP",
+    "S",
+]
+unfixable = [ ]
+ignore = [
+    "D200",
+    "D400",
+    "UP007",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.uv.sources]
+pandas-openscm = { git = "https://github.com/openscm/pandas-openscm", rev = "c12ca16" }
